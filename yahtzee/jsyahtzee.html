@@ -1,1 +1,410 @@
 
+<html>
+<head>
+<title>JavaScript Yahtzee</title>
+<script language="JavaScript">
+<!--
+var d1=new Array(5);/*dice values*/
+var ds1=new Array(5);/*sorted dice values*/
+var s1=new Array(13);/*scores*/
+var su1=new Array(13);/*score used*/
+var rn=0;/*roll number*/
+var sel;/*score line selected*/
+var ls;/*line score*/
+
+function roll(form)
+  {
+  if (rn>2)
+    {
+    for (var i=0;i<form.r1.length;i++) form.r1[i].checked=false;
+    alert("No more rolls available.\nPlease select scoring category\nand press Score.");
+    return;
+    }
+  if (!(form.r1[0].checked||form.r1[1].checked||form.r1[2].checked||
+        form.r1[3].checked||form.r1[4].checked))
+    {
+    alert("No dice are selected.\nPlease select dice\nand press Roll.");
+    return;
+    }
+  rn++;
+  form.rn.value=rn;
+  for (var i=0;i<d1.length;i++) 
+    {
+    if (form.r1[i].checked) d1[i]=Math.floor(Math.random()*6)+1;
+    form.d1[i].value=d1[i];
+    form.r1[i].checked=false;
+    }
+  }
+
+function getselected(form)
+  {
+  sel="";
+  for (var i=0;i<form.q1.length;i++) 
+    {
+    if (form.q1[i].checked==true) 
+      {
+      sel=i;
+      return;
+      }
+    }
+  } 
+
+function scorex(form)
+  {
+  sel=-1;
+  getselected(form);
+  if (sel=="-1")
+    {
+    alert("Nothing selected.");
+    return;
+    }
+  if (su1[sel])
+    {
+    alert("Category has been used.\nPlease select another category\nand press Score.");
+    return;
+    }
+  ls=0;
+  switch (sel)
+    {
+    case 0: 
+    case 2: 
+    case 4: 
+    case 6: 
+    case 8: 
+    case 10:
+      scorebook();
+      scoreAddYZ();
+      break;
+    case 1: 
+      score3x();
+      scoreAddYZ();
+      break;
+    case 3: 
+      score4x();
+      scoreAddYZ();
+      break;
+    case 5: 
+      scoreFH();
+      scoreAddYZ();
+      break;
+    case 7: 
+      scoreSS();
+      break;
+    case 9: 
+      scoreLS();
+      break;
+    case 11:
+      scoreYZ();
+      break;
+    case 12: /* chance */
+      for (var i=0;i<d1.length;i++) ls+=d1[i];
+      scoreAddYZ();
+      break;
+    default: 
+      alert("Something else selected.");
+      return;
+   }
+  su1[sel]=true;
+  s1[sel]=ls;
+  calcscore(form);
+  newturn(form); 
+  }
+
+function calcscore(form)
+  {
+  var avail=false;
+  var n=-1;
+  for (var i=0;i<s1.length;i++)
+    {
+   if (su1[i])
+      form.s1[i].value=s1[i];
+   else
+      {
+      avail=true;
+      form.s1[i].value="";
+      }
+    }
+  form.topscore.value=s1[0]+s1[2]+s1[4]+s1[6]+s1[8]+s1[10];
+  form.bottomscore.value=s1[1]+s1[3]+s1[5]+s1[7]+s1[9]+s1[11]+s1[12];
+  if (form.topscore.value > 62)
+    form.bonus.value=35;
+  else
+    form.bonus.value=0;
+    form.score.value = eval(form.topscore.value) + eval(form.bonus.value) + eval(form.bottomscore.value);
+
+  if (!avail)
+    {
+    alert("Game Over.");
+    checkScore(form);
+    newgame(form);
+    }
+  if (!su1[0]) n=0;
+  else if (!su1[2]) n=2;
+  else if (!su1[4]) n=4;
+  else if (!su1[6]) n=6;
+  else if (!su1[8]) n=8;
+  else if (!su1[10]) n=10;
+  else if (!su1[1]) n=1;
+  else if (!su1[3]) n=3;
+  else if (!su1[5]) n=5;
+  else if (!su1[7]) n=7;
+  else if (!su1[9]) n=9;
+  else if (!su1[11]) n=11;
+  else if (!su1[12]) n=12;
+  if (n>-1)
+    form.q1[n].checked=true;
+  } 
+
+function scorebook()
+  {
+  var book=sel/2+1;
+  for (var i=0;i<d1.length;i++)
+    if (d1[i]==book) ls+=d1[i];
+  }
+
+function score3x()
+  {
+  ds1=d1;
+  ds1.sort();
+  var a=ds1[2]; 
+  if ((ds1[0]==a && ds1[1]==a) ||
+      (ds1[1]==a && ds1[3]==a) ||
+      (ds1[3]==a && ds1[4]==a))
+    for (var i=0;i<d1.length;i++) ls+=d1[i];
+  }
+
+function score4x()
+  {
+  ds1=d1;
+  ds1.sort();
+  var a=ds1[2]; 
+  if ((ds1[0]==a && ds1[1]==a && ds1[3]==a) ||
+      (ds1[1]==a && ds1[3]==a && ds1[4]==a))
+    for (var i=0;i<d1.length;i++) ls+=d1[i];
+  }
+
+function scoreFH()
+  {
+  ds1=d1;
+  ds1.sort();
+  var a=ds1[2]; 
+  if ((ds1[0]==ds1[1] && ds1[3]==a && ds1[4]==a) ||
+      (ds1[0]==a && ds1[1]==a && ds1[3]==ds1[4]))
+    ls=25;
+  }
+
+function scoreSS()
+  {
+  var a1=new Array(7);
+  for (var i=0;i<a1.length;i++)
+    a1[i]=false;
+  for (var i=0;i<d1.length;i++)
+    a1[d1[i]]=true;
+  if ((a1[1] && a1[2] && a1[3] && a1[4]) ||
+      (a1[2] && a1[3] && a1[4] && a1[5]) ||
+      (a1[3] && a1[4] && a1[5] && a1[6]))
+    ls=30;
+  }
+
+function scoreLS()
+  {
+  var a1=new Array(7);
+  for (var i=0;i<a1.length;i++)
+    a1[i]=false;
+  for (var i=0;i<d1.length;i++)
+    a1[d1[i]]=true;
+  if ((a1[1] && a1[2] && a1[3] && a1[4] && a1[5]) ||
+      (a1[2] && a1[3] && a1[4] && a1[5] && a1[6]))
+    ls=40;
+  }
+
+function scoreYZ()
+  {
+  var a=d1[0];
+  if (d1[1]==a && d1[2]==a && d1[3]==a && d1[4]==a)
+    ls=50;
+  }
+
+function scoreAddYZ()
+  {
+  if (s1[11]>0 && ls>0)
+    {
+    var a=d1[0];
+    if (d1[1]==a && d1[2]==a && d1[3]==a && d1[4]==a)
+      s1[11]+=100;
+    }
+  }
+
+function newgame(form)
+  {
+  for (var i=0;i<s1.length;i++)
+    {
+    s1[i]=0;
+    su1[i]=false;
+    form.s1[i].value=0;
+    }
+  calcscore(form);
+  newturn(form);
+  }
+
+function newturn(form)
+  {
+  rn=0;
+  form.rn.value=rn;
+  for (var i=0;i<form.r1.length;i++) form.r1[i].checked=true;
+  roll(form);
+  }
+
+function checkScore(form) 
+  {
+  var a=readCookie();
+  if (a==null) a="/////////";
+  var a1=a.split("/");
+  var next=a1.length;
+  if (form.score.value>=a1[0])
+    {
+    a1[0]=form.score.value;
+    a1.sort(compareNumbers);
+    var newa=a1[0];
+    for (x=1; x < a1.length; x++) newa=newa+"/"+a1[x];
+    alert("Congratulations!\n"+form.score.value+" is one of the\nten highest scores:\n\n" +a1[9]+"\n"+a1[8]+"\n"+a1[7]+"\n"+a1[6]+"\n"+a1[5]+"\n"+a1[4]+"\n"+a1[3]+"\n"+a1[2]+"\n"+a1[1]+"\n"+a1[0]);
+    a=newa;
+    var exp=new Date()
+    var oneYearFromNow=exp.getTime()+(365*24*60*60*1000)
+    exp.setTime(oneYearFromNow)
+    document.cookie="yzscores="+a+"; expires="+exp.toGMTString();
+    }
+  }
+
+function getscores(form) 
+  {
+  var a=readCookie();
+  if (a==null) a="/////////";
+  a1=a.split("/");
+  }
+
+function showscores(form) 
+  {
+  getscores(form);
+  if(!confirm("Here are the ten highest scores:\n\n" +a1[9]+"\n"+a1[8]+"\n"+a1[7]+"\n"+a1[6]+"\n"+a1[5]+"\n"+a1[4]+"\n"+a1[3]+"\n"+a1[2]+"\n"+a1[1]+"\n"+a1[0]+
+"\n\nPress OK to retain scores.\nPress Cancel to clear scores."))
+    {
+    alert("Scores have been cleared.");
+    a="/////////";
+    var exp=new Date()
+    var oneYearFromNow=exp.getTime()+(365*24*60*60*1000)
+    exp.setTime(oneYearFromNow)
+    document.cookie="yzscores="+a+"; expires="+exp.toGMTString();
+    }
+  }
+
+function readCookie()
+  {
+  cookie_array = document.cookie.split("; ");
+  for (x=0; x < cookie_array.length; x++)
+    {
+    cookieParts_array = cookie_array[x].split("=");
+      if (cookieParts_array[0] == 'yzscores')
+        {
+        return cookieParts_array[1];
+        }
+    }
+  return null;
+  }
+
+function compareNumbers(a, b)
+  {
+  return a - b
+  }
+
+function help()
+  {
+  if (confirm("Javascript Yahtzee\n\nThe object of the game is to obtain the highest possible score over thirteen turns.  Each turn consists of up to three rolls of five dice.  After the first, second, or third roll of the dice, the turn is scored in one of the thirteen scoring categories, even if the score for the turn must be entered as a zero.  A scoring category may be used only once per game.  After the thirteenth turn, the game is over.\n\nThe game starts automatically.  The first roll of the dice is shown by the five numbers in the first row.  Select which dice you want to re-roll by clicking the check boxes below the dice numbers, then press the Roll button.  The second roll of the dice will then be shown.  You can again select the dice to re-roll, and press Roll.  After the third roll, you must select a scoring category.  You may select a scoring category after the first or second roll."))
+
+  if (confirm("To select a scoring category, click one of the radio buttons to the left of a scoring category, then press the Score button.  Here are the points for each scoring category:\n\n1 - Ones - one point for each die with a one.\n2 - Twos - two points for each die with a two.\n3 - Threes - three points for each die with a three.\n4 - Fours - four points for each die with a four.\n5 - Fives - five points for each die with a five.\n6 - Sixes - six points for each die with a six.\n3x - Three of a kind - if three of the dice are the same, the sum of all five dice.\n4x - Four of a kind - if four of the dice are the same, the sum of all five dice.\nFH - Full House - if three of the dice are the same, and the other two dice are the same, 25 points.\nSS - Small Straight - if any four of the dice can be arranged in a sequence, 30 points.\nLS - Large Straight - if all five dice can be arranged in a sequence, 40 points.\nYZ - Yahtzee - if all five dice are the same, 50 points.\nCH - Chance - the sum of all five dice."))
+
+  if (confirm("The sum of the 1, 2, 3, 4, 5, and 6 categories is shown as the Top score. If the Top score is at least 63 points, a Bonus of 35 points is awarded.\n\nIf a Yahtzee has been scored as 50 points and an additional Yahtzee is rolled and is scored for more than zero points, 100 points is added to the YZ score.\n\nThe New button may be pressed at any time to abandon the current game and start a new game.  Wimp.\n\nCopyright (C) 2002 David Savage\n\nThis program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License (http://www.gnu.org/licenses/gpl.html)."));
+  }
+ 
+// -->
+</script>
+<NOSCRIPT>
+<B>Your browser has JavaScript turned off.</B><BR>
+Since this game is written using JavaScript, it will not work unless you turn on JavaScript.<BR>
+Please open your browser preferences, and enable JavaScript.<BR>
+You do not have to restart your browser or your computer after you
+enable JavaScript. Just click the 'Reload' button.
+<HR>
+</NOSCRIPT>
+</head>
+<body bgcolor="#ffffff" onLoad="newgame(document.forms[0])">
+<!-- following code added by server. PLEASE REMOVE -->
+<link href="http://us.geocities.com/js_source/div.css" rel="stylesheet" type="text/css"><script language="JavaScript" src="http://us.geocities.com/js_source/div03.js"></script>
+<!-- preceding code added by server. PLEASE REMOVE -->
+<form name="quiz">
+<TABLE cellSpacing=1 cellPadding=2 border=0><TBODY>
+<TR align=center>
+<TD><input type=text size=1 name="d1" readonly></TD>
+<TD><input type=text size=1 name="d1" readonly></TD>
+<TD><input type=text size=1 name="d1" readonly></TD>
+<TD><input type=text size=1 name="d1" readonly></TD>
+<TD><input type=text size=1 name="d1" readonly></TD>
+<TD>Roll #</TD>
+<TD><input type=text size=1 name="rn" readonly></TD>
+<TR align=center>
+<TD><input type="checkbox" name="r1"></TD>
+<TD><input type="checkbox" name="r1"></TD>
+<TD><input type="checkbox" name="r1"></TD>
+<TD><input type="checkbox" name="r1"></TD>
+<TD><input type="checkbox" name="r1"></TD>
+<TD><input type="button" value="Help" onClick="help()">
+</TBODY></TABLE>
+<TABLE cellSpacing=1 cellPadding=2 border=0><TBODY>
+<TR><TD><input type="button" value=" Roll " onClick="roll(this.form)">
+<TD><input type="button" value="Score" onClick="scorex(this.form)">
+<TD><input type="button" value=" New " onClick="newgame(this.form)">
+<TD><input type="button" value="High Sc" onClick="showscores(form)">
+</TBODY></TABLE>
+<BR><TABLE cellSpacing=1 cellPadding=2 border=0><TBODY>
+<TR>
+<TD><input type="radio" name="q1"></TD><TD>1</TD>
+<TD><input type=text size=3 name="s1" readonly></TD>
+<TD><input type="radio" name="q1"></TD><TD>3x</TD>
+<TD><input type=text size=3 name="s1" readonly></TD>
+<TR>
+<TD><input type="radio" name="q1"></TD><TD>2</TD>
+<TD><input type=text size=3 name="s1" readonly></TD>
+<TD><input type="radio" name="q1"></TD><TD>4x</TD>
+<TD><input type=text size=3 name="s1" readonly></TD>
+<TR>
+<TD><input type="radio" name="q1"></TD><TD>3</TD>
+<TD><input type=text size=3 name="s1" readonly></TD>
+<TD><input type="radio" name="q1"></TD><TD>FH</TD>
+<TD><input type=text size=3 name="s1" readonly></TD>
+<TR>
+<TD><input type="radio" name="q1"></TD><TD>4</TD>
+<TD><input type=text size=3 name="s1" readonly></TD>
+<TD><input type="radio" name="q1"></TD><TD>SS</TD>
+<TD><input type=text size=3 name="s1" readonly></TD>
+<TR>
+<TD><input type="radio" name="q1"></TD><TD>5</TD>
+<TD><input type=text size=3 name="s1" readonly></TD>
+<TD><input type="radio" name="q1"></TD><TD>LS</TD>
+<TD><input type=text size=3 name="s1" readonly></TD>
+<TR>
+<TD><input type="radio" name="q1"></TD><TD>6</TD>
+<TD><input type=text size=3 name="s1" readonly></TD>
+<TD><input type="radio" name="q1"></TD><TD>YZ</TD>
+<TD><input type=text size=3 name="s1" readonly></TD>
+<TR>
+<TD></TD><TD>Top</TD><TD><input type=text size=3 name="topscore" readonly></TD>
+<TD><input type="radio" name="q1"></TD><TD>CH</TD>
+<TD><input type=text size=3 name="s1" readonly></TD>
+<TR>
+<TD></TD><TD>Bonus</TD><TD><input type=text size=3 name="bonus" readonly></TD>
+<TD></TD><TD>Bottom</TD><TD><input type=text size=3 name="bottomscore" readonly></TD>
+<TR>
+<TD></TD><TD>Score</TD><TD><input type=text size=3 name="score" readonly>
+</TBODY></TABLE>
+</form>
+</body>
