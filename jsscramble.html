@@ -1,0 +1,200 @@
+<html>
+<head>
+<title>JavaScript Scramble</title>
+<script language="JavaScript">
+<!--
+
+var empty;var sel;var moves;var scrambled;
+var a1=new Array();
+
+function newgame(form)
+  {
+  for (var i=0;i<form.d1.length-1;i++) form.d1[i].value=i+1;
+  empty=form.d1.length-1;
+  form.d1[empty].value="";
+  moves=0;
+  scrambled=false;
+  }
+
+function scramble(form)
+  {
+  var dir;
+  scrambled=false;
+  for (var i=0;i<=500;i++)
+    {
+    dir=Math.floor(Math.random()*4);
+    if (dir==0) sel=empty-5;
+    else if (dir==1) sel=empty+5;
+    else if (dir==2) sel=empty-1;
+    else if (dir==3) sel=empty+1;
+    if (sel>=0 && sel<=form.d1.length-1)
+      box(form,sel);
+    }
+  moves=0;
+  scrambled=true;
+  }
+
+function swap(form)
+  {
+  form.d1[empty].value=form.d1[sel].value;
+  empty=sel;
+  form.d1[empty].value="";
+  if (scrambled)
+    {
+    var done=true;
+    moves++;
+    for (var i=0;i<form.d1.length-1;i++)
+      if (form.d1[i].value!=i+1)
+        {
+        done=false;
+        break;
+        }
+    if (done)
+      {
+      alert("Game over in "+moves+" moves.");
+      checkScore(form);
+      scrambled=false;
+      }
+    }
+  }
+
+function box(form,selx)
+  {
+  sel=selx;
+  var row=Math.floor(sel/5);
+  var col=sel-row*5;
+  if (sel-5==empty)
+    swap(form);
+  else if (sel+5==empty)
+    swap(form);
+  else if (sel-1==empty && col>0)
+    swap(form);
+  else if (sel+1==empty && col<4)
+    swap(form);
+  }
+
+function checkScore(form)
+  {
+  getscores(form);
+  if (a1[0]=="")
+    {
+    a1[0]=moves;
+    newlow(form);
+    }
+  else if (moves<=a1[9])
+    {
+    a1[9]=moves;
+    newlow(form);
+    }
+  }
+
+function newlow(form)
+  {
+  a1.sort(compareNumbers);
+  alert("Congratulations!\n"+moves+" is one of the\nten lowest scores:\n\n" +a1[9]+"\n"+a1[8]+"\n"+a1[7]+"\n"+a1[6]+"\n"+a1[5]+"\n"+a1[4]+"\n"+a1[3]+"\n"+a1[2]+"\n"+a1[1]+"\n"+a1[0]);
+  var newa=a1[0];
+  for (x=1; x < a1.length; x++) newa=newa+"/"+a1[x];
+  a=newa;
+  var exp=new Date()
+  var oneYearFromNow=exp.getTime()+(365*24*60*60*1000)
+  exp.setTime(oneYearFromNow)
+  document.cookie="scramble="+a+"; expires="+exp.toGMTString();
+  }
+
+function getscores(form)
+  {
+  var a=readCookie();
+  if (a==null) a="/////////";
+  a1=a.split("/");
+  }
+
+function showscores(form)
+  {
+  getscores(form);
+  if(!confirm("Here are the ten lowest scores:\n\n" +a1[9]+"\n"+a1[8]+"\n"+a1[7]+"\n"+a1[6]+"\n"+a1[5]+"\n"+a1[4]+"\n"+a1[3]+"\n"+a1[2]+"\n"+a1[1]+"\n"+a1[0]+
+"\n\nPress OK to retain scores.\nPress Cancel to clear scores."))
+    {
+    alert("Scores have been cleared.");
+    a="/////////";
+    var exp=new Date()
+    var oneYearFromNow=exp.getTime()+(365*24*60*60*1000)
+    exp.setTime(oneYearFromNow)
+    document.cookie="scramble="+a+"; expires="+exp.toGMTString();
+    }
+  }
+
+function readCookie()
+  {
+  cookie_array = document.cookie.split("; ");
+  for (x=0; x < cookie_array.length; x++)
+    {
+    cookieParts_array = cookie_array[x].split("=");
+      if (cookieParts_array[0] == 'scramble')  return cookieParts_array[1];
+    }
+  return null;
+  }
+
+function compareNumbers(a, b)
+  {
+  return a - b;
+  }
+
+function help()
+  {
+  alert("Javascript Scramble\n\nThis game is a simulation of a sliding block puzzle.  The game starts with all the numbers in order.  Click the Scramble button to rearrange the numbers randomly.  The object of the game is get the numbers back in the original order.  Move a number by clicking on it.  If it is next to the blank box, it will slide into the blank box.  Click the New button to start over.\n\nCopyright (C) 2002 David Savage\n\nThis program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License (http://www.gnu.org/licenses/gpl.html).");
+  }
+
+// -->
+</script>
+<NOSCRIPT>
+<B>Your browser has JavaScript turned off.</B><BR>
+Since this game is written using JavaScript, it will not work unless you turn on JavaScript.<BR>
+Please open your browser preferences, and enable JavaScript.<BR>
+You do not have to restart your browser or your computer after you
+enable JavaScript. Just click the 'Reload' button.
+<HR>
+</NOSCRIPT>
+</head>
+<body bgcolor="#ffffff" onLoad="newgame(document.forms[0])">
+<form name="quiz" >
+<TABLE cellSpacing=0 cellPadding=0 border=0><TBODY>
+<TR>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,0)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,1)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,2)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,3)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,4)"></TD>
+<TR>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,5)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,6)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,7)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,8)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,9)"></TD>
+<TR>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,10)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,11)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,12)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,13)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,14)"></TD>
+<TR>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,15)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,16)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,17)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,18)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,19)"></TD>
+<TR>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,20)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,21)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,22)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,23)"></TD>
+<TD><input type=text size=2 name="d1" readonly onFocus="box(this.form,24)"></TD>
+</TBODY></TABLE>
+<p>
+<input type="button" value="New"      name="n1" onClick="newgame(this.form)">
+<input type="button" value="Scramble" name="m1" onClick="scramble(this.form)">
+<p>
+<input type="button" value="Help"     name="h1" onClick="help()">
+<input type="button" value="Scores"   name="s1" onClick="showscores(this.form)">
+</form>
+</body>
+</html>
